@@ -1,4 +1,4 @@
-module github.com/crossplane/provider-influxdb-cloud
+module github.com/crossplane-contrib/provider-influxdb-cloud
 
 go 1.16
 

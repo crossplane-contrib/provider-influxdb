@@ -27,8 +27,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 
-	"github.com/crossplane/provider-influxdb-cloud/apis"
-	"github.com/crossplane/provider-influxdb-cloud/internal/controller"
+	"github.com/crossplane-contrib/provider-influxdb-cloud/apis"
+	"github.com/crossplane-contrib/provider-influxdb-cloud/internal/controller"
 )
 
 func main() {

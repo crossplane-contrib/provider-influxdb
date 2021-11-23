@@ -6,14 +6,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: mytypes.sample.influxdbcloud.crossplane.io
+  name: mytypes.sample.influxdb.crossplane.io
 spec:
-  group: sample.influxdbcloud.crossplane.io
+  group: sample.influxdb.crossplane.io
   names:
     categories:
     - crossplane
     - managed
-    - influxdbcloud
+    - influxdb
     kind: MyType
     listKind: MyTypeList
     plural: mytypes

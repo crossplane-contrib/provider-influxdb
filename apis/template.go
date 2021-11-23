@@ -20,8 +20,8 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	samplev1alpha1 "github.com/crossplane-contrib/provider-influxdb-cloud/apis/sample/v1alpha1"
-	influxdbv1alpha1 "github.com/crossplane-contrib/provider-influxdb-cloud/apis/v1alpha1"
+	samplev1alpha1 "github.com/crossplane-contrib/provider-influxdb/apis/sample/v1alpha1"
+	influxdbv1alpha1 "github.com/crossplane-contrib/provider-influxdb/apis/v1alpha1"
 )
 
 func init() {

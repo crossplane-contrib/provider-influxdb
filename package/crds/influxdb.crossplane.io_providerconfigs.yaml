@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: providerconfigs.influxdbcloud.crossplane.io
+  name: providerconfigs.influxdb.crossplane.io
 spec:
-  group: influxdbcloud.crossplane.io
+  group: influxdb.crossplane.io
   names:
     kind: ProviderConfig
     listKind: ProviderConfigList

@@ -44,7 +44,7 @@ GO111MODULE = on
 # Setup Images
 
 DOCKER_REGISTRY := crossplane
-IMAGES = provider-jet-gcp provider-jet-gcp-controller
+IMAGES = provider-influxdb provider-influxdb-controller
 -include build/makelib/image.mk
 
 # ====================================================================================

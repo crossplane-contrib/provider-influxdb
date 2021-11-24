@@ -22,8 +22,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
-	"github.com/crossplane/provider-template/internal/controller/config"
-	"github.com/crossplane/provider-template/internal/controller/mytype"
+	"github.com/crossplane-contrib/provider-influxdb/internal/controller/config"
+	"github.com/crossplane-contrib/provider-influxdb/internal/controller/mytype"
 )
 
 // Setup creates all Template controllers with the supplied logger and adds them to

@@ -1,6 +1,11 @@
-/bin
+/.cache
+/.work
+/_output
+cover.out
 /vendor
 /.vendor-new
-.vscode
-.idea
 .DS_Store
+
+# ignore IDE folders
+.vscode/
+.idea/

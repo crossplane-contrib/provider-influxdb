@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/domain"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -40,7 +39,11 @@ import (
 )
 
 const (
-	errNotOrganization = "managed resource is not an Organization custom resource"
+	errNotOrganization    = "managed resource is not an Organization custom resource"
+	errFindOrganization   = "cannot find organization"
+	errCreateOrganization = "cannot create organization"
+	errUpdateOrganization = "cannot update organization"
+	errDeleteOrganization = "cannot delete organization"
 )
 
 // Setup adds a controller that reconciles Organization managed resources.
@@ -88,7 +91,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 type external struct {
 	// A 'client' used to connect to the external resource API. In practice this
 	// would be something like an AWS SDK client.
-	api api.OrganizationsAPI
+	api clients.OrganizationsAPI
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -99,7 +102,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	org, err := c.api.FindOrganizationByName(ctx, meta.GetExternalName(cr))
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound, err), "cannot find organization")
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound, err), errFindOrganization)
 	}
 
 	cr.Status.AtProvider = GetOrganizationObservation(org)
@@ -127,7 +130,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		Name:        meta.GetExternalName(cr),
 	})
 
-	return managed.ExternalCreation{}, errors.Wrap(err, "cannot create organization")
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreateOrganization)
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -142,7 +145,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		Id:          &cr.Status.AtProvider.ID,
 	})
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot update organization")
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateOrganization)
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -151,5 +154,5 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotOrganization)
 	}
 	// NOTE(muvaf): The call returns nil error if the org does not exist.
-	return errors.Wrap(c.api.DeleteOrganization(ctx, &domain.Organization{Id: &cr.Status.AtProvider.ID}), "cannot delete organization")
+	return errors.Wrap(c.api.DeleteOrganization(ctx, &domain.Organization{Id: &cr.Status.AtProvider.ID}), errDeleteOrganization)
 }

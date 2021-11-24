@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 
-	"github.com/crossplane-contrib/provider-influxdb/apis/orgs/v1alpha1"
+	"github.com/crossplane-contrib/provider-influxdb/apis/v1alpha1"
 )
 
 // GetOrganizationObservation converts an Organization response to an observation.

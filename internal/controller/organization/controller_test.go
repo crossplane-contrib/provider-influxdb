@@ -20,25 +20,18 @@ import (
 	"context"
 	"testing"
 
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/resource/fake"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/influxdb-client-go/v2/api/http"
-
+	"github.com/influxdata/influxdb-client-go/v2/domain"
+	"github.com/pkg/errors"
 	"k8s.io/utils/pointer"
 
-	"github.com/influxdata/influxdb-client-go/v2/domain"
-
-	"github.com/crossplane-contrib/provider-influxdb/apis/orgs/v1alpha1"
-
+	"github.com/crossplane-contrib/provider-influxdb/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-influxdb/internal/clients"
-
-	"github.com/crossplane/crossplane-runtime/pkg/test"
-
-	"github.com/crossplane/crossplane-runtime/pkg/resource/fake"
-	"github.com/pkg/errors"
-
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/google/go-cmp/cmp"
 )
 
 var (

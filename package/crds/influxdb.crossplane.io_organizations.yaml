@@ -4,9 +4,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: organizations.orgs.influxdb.crossplane.io
+  name: organizations.influxdb.crossplane.io
 spec:
-  group: orgs.influxdb.crossplane.io
+  group: influxdb.crossplane.io
   names:
     categories:
     - crossplane

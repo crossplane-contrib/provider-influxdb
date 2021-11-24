@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	"github.com/crossplane-contrib/provider-influxdb/apis/orgs/v1alpha1"
+	"github.com/crossplane-contrib/provider-influxdb/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-influxdb/internal/clients"
 )
 

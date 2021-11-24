@@ -20,15 +20,13 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	orgsv1alpha1 "github.com/crossplane-contrib/provider-influxdb/apis/orgs/v1alpha1"
-	influxdbv1alpha1 "github.com/crossplane-contrib/provider-influxdb/apis/v1alpha1"
+	"github.com/crossplane-contrib/provider-influxdb/apis/v1alpha1"
 )
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
-		influxdbv1alpha1.SchemeBuilder.AddToScheme,
-		orgsv1alpha1.SchemeBuilder.AddToScheme,
+		v1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

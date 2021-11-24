@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package organization
+package bucket
 
 import (
 	"context"
@@ -29,7 +29,6 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/domain"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -39,23 +38,23 @@ import (
 )
 
 const (
-	errNotOrganization    = "managed resource is not an Organization custom resource"
-	errFindOrganization   = "cannot find organization"
-	errCreateOrganization = "cannot create organization"
-	errUpdateOrganization = "cannot update organization"
-	errDeleteOrganization = "cannot delete organization"
+	errNotBucket    = "managed resource is not an Bucket custom resource"
+	errFindBucket   = "cannot find bucket"
+	errCreateBucket = "cannot create bucket"
+	errUpdateBucket = "cannot update bucket"
+	errDeleteBucket = "cannot delete bucket"
 )
 
-// Setup adds a controller that reconciles Organization managed resources.
+// Setup adds a controller that reconciles Bucket managed resources.
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
-	name := managed.ControllerName(v1alpha1.OrganizationGroupKind)
+	name := managed.ControllerName(v1alpha1.BucketGroupKind)
 
 	o := controller.Options{
 		RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
 	}
 
 	r := managed.NewReconciler(mgr,
-		resource.ManagedKind(v1alpha1.OrganizationGroupVersionKind),
+		resource.ManagedKind(v1alpha1.BucketGroupVersionKind),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 		managed.WithLogger(l.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))))
@@ -63,86 +62,85 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o).
-		For(&v1alpha1.Organization{}).
+		For(&v1alpha1.Bucket{}).
 		Complete(r)
 }
 
+// A connector is expected to produce an ExternalClient when its Connect method
+// is called.
 type connector struct {
 	kube client.Client
 }
 
+// Connect typically produces an ExternalClient by:
+// 1. Tracking that the managed resource is using a ProviderConfig.
+// 2. Getting the managed resource's ProviderConfig.
+// 3. Getting the credentials specified by the ProviderConfig.
+// 4. Using the credentials to form a client.
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cl, err := clients.NewClient(ctx, c.kube, mg)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create a new client")
 	}
-	return &external{api: cl.OrganizationsAPI()}, nil
+	return &external{api: cl.BucketsAPI()}, nil
 }
 
+// An ExternalClient observes, then either creates, updates, or deletes an
+// external resource to ensure it reflects the managed resource's desired state.
 type external struct {
-	api clients.OrganizationsAPI
+	// A 'client' used to connect to the external resource API. In practice this
+	// would be something like an AWS SDK client.
+	api clients.BucketsAPI
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha1.Organization)
+	cr, ok := mg.(*v1alpha1.Bucket)
 	if !ok {
-		return managed.ExternalObservation{}, errors.New(errNotOrganization)
+		return managed.ExternalObservation{}, errors.New(errNotBucket)
 	}
 
-	org, err := c.api.FindOrganizationByName(ctx, meta.GetExternalName(cr))
+	bucket, err := c.api.FindBucketByName(ctx, meta.GetExternalName(cr))
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(clients.IsNotFound, err), errFindOrganization)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(clients.IsNotFound, err), errFindBucket)
 	}
 
-	cr.Status.AtProvider = GetOrganizationObservation(org)
-	switch cr.Status.AtProvider.Status {
-	// Empty string also means active.
-	case string(domain.OrganizationStatusActive), "":
-		cr.SetConditions(v1.Available())
-	case string(domain.OrganizationStatusInactive):
-		cr.SetConditions(v1.Unavailable())
-	}
-
+	cr.Status.AtProvider = GenerateBucketObservation(bucket)
+	cr.SetConditions(v1.Available())
+	li := LateInitialize(&cr.Spec.ForProvider, bucket)
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: pointer.StringDeref(org.Description, "") == pointer.StringDeref(cr.Spec.ForProvider.Description, ""),
+		ResourceExists:          true,
+		ResourceLateInitialized: li,
+		ResourceUpToDate:        IsUpToDate(cr.Spec.ForProvider, bucket),
 	}, nil
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.Organization)
+	cr, ok := mg.(*v1alpha1.Bucket)
 	if !ok {
-		return managed.ExternalCreation{}, errors.New(errNotOrganization)
+		return managed.ExternalCreation{}, errors.New(errNotBucket)
 	}
 
-	_, err := c.api.CreateOrganization(ctx, &domain.Organization{
-		Description: cr.Spec.ForProvider.Description,
-		Name:        meta.GetExternalName(cr),
-	})
+	_, err := c.api.CreateBucket(ctx, GenerateBucket(cr.Spec.ForProvider))
 
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreateOrganization)
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreateBucket)
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.Organization)
+	cr, ok := mg.(*v1alpha1.Bucket)
 	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errNotOrganization)
+		return managed.ExternalUpdate{}, errors.New(errNotBucket)
 	}
 
-	_, err := c.api.UpdateOrganization(ctx, &domain.Organization{
-		Name:        meta.GetExternalName(cr),
-		Description: cr.Spec.ForProvider.Description,
-		Id:          &cr.Status.AtProvider.ID,
-	})
+	_, err := c.api.UpdateBucket(ctx, GenerateBucket(cr.Spec.ForProvider))
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateOrganization)
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateBucket)
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.Organization)
+	cr, ok := mg.(*v1alpha1.Bucket)
 	if !ok {
-		return errors.New(errNotOrganization)
+		return errors.New(errNotBucket)
 	}
 	// NOTE(muvaf): The call returns nil error if the org does not exist.
-	return errors.Wrap(c.api.DeleteOrganization(ctx, &domain.Organization{Id: &cr.Status.AtProvider.ID}), errDeleteOrganization)
+	return errors.Wrap(c.api.DeleteBucket(ctx, &domain.Bucket{Id: &cr.Status.AtProvider.ID}), errDeleteBucket)
 }

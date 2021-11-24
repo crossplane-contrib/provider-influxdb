@@ -18,9 +18,11 @@ package clients
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	influxdbv2 "github.com/influxdata/influxdb-client-go/v2"
+	apihttp "github.com/influxdata/influxdb-client-go/v2/api/http"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -51,4 +53,10 @@ func NewClient(ctx context.Context, kube client.Client, mg resource.Managed) (in
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 	return influxdbv2.NewClient(pc.Spec.Endpoint, string(token)), nil
+}
+
+// IsNotFound returns whether the error is of type NotFound.
+func IsNotFound(err error) bool {
+	hErr, ok := err.(*apihttp.Error)
+	return ok && hErr.StatusCode == http.StatusNotFound
 }

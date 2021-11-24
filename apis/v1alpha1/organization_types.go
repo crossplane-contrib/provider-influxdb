@@ -31,15 +31,15 @@ type OrganizationParameters struct {
 
 // OrganizationObservation are the observable fields of a Organization.
 type OrganizationObservation struct {
-	ID        string      `json:"id,omitempty"`
-	Status    string      `json:"status,omitempty"`
-	CreatedAt metav1.Time `json:"createdAt,omitempty"`
-	UpdatedAt metav1.Time `json:"updatedAt,omitempty"`
-	Links     Links       `json:"links,omitempty"`
+	ID        string            `json:"id,omitempty"`
+	Status    string            `json:"status,omitempty"`
+	CreatedAt metav1.Time       `json:"createdAt,omitempty"`
+	UpdatedAt metav1.Time       `json:"updatedAt,omitempty"`
+	Links     OrganizationLinks `json:"links,omitempty"`
 }
 
-// Links is the URIs of all links.
-type Links struct {
+// OrganizationLinks is the URIs of all links.
+type OrganizationLinks struct {
 	// URI of resource.
 	Buckets string `json:"buckets,omitempty"`
 

@@ -1,0 +1,14 @@
+apiVersion: influxdb.crossplane.io/v1alpha1
+kind: Bucket
+metadata:
+  name: example-bucket
+spec:
+  forProvider:
+    description: test-description
+    orgIDRef:
+      name: example-org
+    retentionRules:
+    - everySeconds: 0
+      type: expire
+  providerConfigRef:
+    name: default

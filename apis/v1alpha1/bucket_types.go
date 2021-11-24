@@ -30,7 +30,18 @@ type BucketParameters struct {
 
 	// OrgID is the ID of the org this Bucket will be a member of.
 	// Either OrgID or OrgIDRef or OrgIDSelector has to be given during creation.
+	// +crossplane:generate:reference:type=Organization
+	// +crossplane:generate:reference:extractor=OrganizationID()
 	OrgID *string `json:"orgID,omitempty"`
+
+	// OrgIDRef references an Organization to retrieve its ID to populate OrgID.
+	// +optional
+	// +immutable
+	OrgIDRef *xpv1.Reference `json:"orgIDRef,omitempty"`
+
+	// OrgIDSelector selects a reference to an Organization to populate OrgIDRef.
+	// +optional
+	OrgIDSelector *xpv1.Selector `json:"orgIDSelector,omitempty"`
 
 	RP *string `json:"rp,omitempty"`
 

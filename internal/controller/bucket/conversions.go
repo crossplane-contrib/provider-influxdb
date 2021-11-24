@@ -19,6 +19,7 @@ package bucket
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/influxdata/influxdb-client-go/v2/domain"
@@ -86,9 +87,10 @@ func GenerateBucketObservation(b *domain.Bucket) v1alpha1.BucketObservation { //
 
 // GenerateBucket returns a Bucket model that the InfluxDB API accepts for creation
 // and update.
-func GenerateBucket(params v1alpha1.BucketParameters) *domain.Bucket {
+func GenerateBucket(name string, params v1alpha1.BucketParameters) *domain.Bucket {
 	sType := domain.SchemaType(params.SchemaType)
 	out := &domain.Bucket{
+		Name:        name,
 		Description: params.Description,
 		OrgID:       params.OrgID,
 		Rp:          params.RP,
@@ -136,7 +138,7 @@ func IsUpToDate(params v1alpha1.BucketParameters, obs *domain.Bucket) bool {
 	for i := range params.RetentionRules {
 		if params.RetentionRules[i].Type != string(obs.RetentionRules[i].Type) ||
 			params.RetentionRules[i].EverySeconds != obs.RetentionRules[i].EverySeconds ||
-			pointer.Int64Deref(params.RetentionRules[i].ShardGroupDurationSeconds, 0) != pointer.Int64Deref(obs.RetentionRules[i].ShardGroupDurationSeconds, 0) {
+			pointer.Int64Deref(params.RetentionRules[i].ShardGroupDurationSeconds, 604800) != pointer.Int64Deref(obs.RetentionRules[i].ShardGroupDurationSeconds, 0) {
 			return false
 		}
 	}
@@ -145,4 +147,10 @@ func IsUpToDate(params v1alpha1.BucketParameters, obs *domain.Bucket) bool {
 
 func retentionRuleKey(ruleType string, everySeconds int64, shardGroupDurationSeconds *int64) string {
 	return fmt.Sprintf("%s-%d-%d", ruleType, everySeconds, pointer.Int64Deref(shardGroupDurationSeconds, 0))
+}
+
+func IsNotFound(name string) resource.ErrorIs {
+	return func(err error) bool {
+		return strings.Contains(err.Error(), fmt.Sprintf("bucket '%s' not found", name))
+	}
 }

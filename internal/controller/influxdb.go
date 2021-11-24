@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"github.com/crossplane-contrib/provider-influxdb/internal/controller/bucket"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -31,6 +32,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
 		providerconfig.Setup,
 		organization.Setup,
+		bucket.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

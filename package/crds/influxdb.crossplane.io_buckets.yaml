@@ -67,6 +67,31 @@ spec:
                       member of. Either OrgID or OrgIDRef or OrgIDSelector has to
                       be given during creation.
                     type: string
+                  orgIDRef:
+                    description: OrgIDRef references an Organization to retrieve its
+                      ID to populate OrgID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  orgIDSelector:
+                    description: OrgIDSelector selects a reference to an Organization
+                      to populate OrgIDRef.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   retentionRules:
                     description: Rules to expire or retain data. No rules means data
                       never expires.

@@ -101,7 +101,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	bucket, err := c.api.FindBucketByName(ctx, meta.GetExternalName(cr))
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(clients.IsNotFound, err), errFindBucket)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound(meta.GetExternalName(cr)), err), errFindBucket)
 	}
 
 	cr.Status.AtProvider = GenerateBucketObservation(bucket)
@@ -120,7 +120,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotBucket)
 	}
 
-	_, err := c.api.CreateBucket(ctx, GenerateBucket(cr.Spec.ForProvider))
+	_, err := c.api.CreateBucket(ctx, GenerateBucket(meta.GetExternalName(cr), cr.Spec.ForProvider))
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreateBucket)
 }
@@ -130,8 +130,9 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotBucket)
 	}
-
-	_, err := c.api.UpdateBucket(ctx, GenerateBucket(cr.Spec.ForProvider))
+	b := GenerateBucket(meta.GetExternalName(cr), cr.Spec.ForProvider)
+	b.Id = &cr.Status.AtProvider.ID
+	_, err := c.api.UpdateBucket(ctx, b)
 
 	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateBucket)
 }

@@ -19,8 +19,6 @@ package v1alpha1
 import (
 	"reflect"
 
-	"github.com/crossplane-contrib/provider-influxdb/apis/v1alpha1"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -107,11 +105,11 @@ type OrganizationList struct {
 // Organization type metadata.
 var (
 	OrganizationKind             = reflect.TypeOf(Organization{}).Name()
-	OrganizationGroupKind        = schema.GroupKind{Group: v1alpha1.Group, Kind: OrganizationKind}.String()
-	OrganizationKindAPIVersion   = OrganizationKind + "." + v1alpha1.SchemeGroupVersion.String()
-	OrganizationGroupVersionKind = v1alpha1.SchemeGroupVersion.WithKind(OrganizationKind)
+	OrganizationGroupKind        = schema.GroupKind{Group: Group, Kind: OrganizationKind}.String()
+	OrganizationKindAPIVersion   = OrganizationKind + "." + SchemeGroupVersion.String()
+	OrganizationGroupVersionKind = SchemeGroupVersion.WithKind(OrganizationKind)
 )
 
 func init() {
-	v1alpha1.SchemeBuilder.Register(&Organization{}, &OrganizationList{})
+	SchemeBuilder.Register(&Organization{}, &OrganizationList{})
 }

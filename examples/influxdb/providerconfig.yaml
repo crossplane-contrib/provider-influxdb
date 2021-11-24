@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: crossplane-system
+  name: influxdb-token
+type: Opaque
+stringData:
+  authToken: my-super-secret-auth-token
+---
+apiVersion: influxdb.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  endpoint: http://influxdb.crossplane-system.svc.cluster.local:8086
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: influxdb-token
+      key: authToken
+# ---
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#     name: influxdb
+#     namespace: crossplane-system
+# spec:
+#     replicas: 1
+#     selector:
+#         matchLabels:
+#             app: influxdb
+#     serviceName: influxdb
+#     template:
+#         metadata:
+#             labels:
+#                 app: influxdb
+#         spec:
+#             containers:
+#               - image: influxdb:2.1.1
+#                 name: influxdb
+#                 ports:
+#                   - containerPort: 8086
+#                     name: influxdb
+#                 env:
+#                 - name: DOCKER_INFLUXDB_INIT_MODE
+#                   value: setup
+#                 - name: DOCKER_INFLUXDB_INIT_USERNAME
+#                   value: myuser
+#                 - name: DOCKER_INFLUXDB_INIT_PASSWORD
+#                   value: mypassword
+#                 - name: DOCKER_INFLUXDB_INIT_ORG
+#                   value: init-org
+#                 - name: DOCKER_INFLUXDB_INIT_BUCKET
+#                   value: init-bucket
+#                 - name: DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+#                   value: my-super-secret-auth-token # to be used to authenticate
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#     name: influxdb # to be used as endpoint to connect to.
+#     namespace: crossplane-system
+# spec:
+#     ports:
+#       - name: influxdb
+#         port: 8086
+#         targetPort: 8086
+#     selector:
+#         app: influxdb
+#     type: ClusterIP

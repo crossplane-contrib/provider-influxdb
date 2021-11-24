@@ -18,8 +18,6 @@ package organization
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -101,7 +99,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	org, err := c.api.FindOrganizationByName(ctx, meta.GetExternalName(cr))
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound(meta.GetExternalName(cr)), err), "cannot find organization")
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound, err), "cannot find organization")
 	}
 
 	cr.Status.AtProvider = GetOrganizationObservation(org)
@@ -114,7 +112,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: pointer.StringDeref(org.Description, "") != pointer.StringDeref(cr.Spec.ForProvider.Description, ""),
+		ResourceUpToDate: pointer.StringDeref(org.Description, "") == pointer.StringDeref(cr.Spec.ForProvider.Description, ""),
 	}, nil
 }
 
@@ -154,14 +152,4 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	// NOTE(muvaf): The call returns nil error if the org does not exist.
 	return errors.Wrap(c.api.DeleteOrganization(ctx, &domain.Organization{Id: &cr.Status.AtProvider.ID}), "cannot delete organization")
-}
-
-// IsNotFound returns an ErrorIs function specific to the given org name.
-func IsNotFound(name string) resource.ErrorIs {
-	return func(err error) bool {
-		// NOTE(muvaf): There is no other way currently to know whether the error
-		// is 404 since the client returns bare fmt.Errorf.
-		// See source code of FindOrganizationByName function for more details.
-		return strings.Contains(err.Error(), fmt.Sprintf("organization '%s' not found", name))
-	}
 }

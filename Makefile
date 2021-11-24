@@ -74,6 +74,8 @@ crds.clean:
 	@find package/crds -name '*.yaml.sed' -delete || $(FAIL)
 	@$(OK) cleaned generated CRDs
 
+generate.done: crds.clean
+
 # Update the submodules, such as the common build scripts.
 submodules:
 	@git submodule sync

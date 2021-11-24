@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,21 +17,20 @@ limitations under the License.
 package controller
 
 import (
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-
-	"github.com/crossplane-contrib/provider-influxdb/internal/controller/config"
-	"github.com/crossplane-contrib/provider-influxdb/internal/controller/mytype"
+	"github.com/crossplane-contrib/provider-influxdb/internal/controller/organization"
+	"github.com/crossplane-contrib/provider-influxdb/internal/controller/providerconfig"
 )
 
 // Setup creates all Template controllers with the supplied logger and adds them to
 // the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
-		config.Setup,
-		mytype.Setup,
+		providerconfig.Setup,
+		organization.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

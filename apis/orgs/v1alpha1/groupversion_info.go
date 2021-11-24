@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains the v1alpha1 group Sample resources of the Template provider.
+// Package v1alpha1 contains the core resources of the Template provider.
 // +kubebuilder:object:generate=true
-// +groupName=sample.influxdb.crossplane.io
+// +groupName=orgs.influxdb.crossplane.io
 // +versionName=v1alpha1
 package v1alpha1
 
@@ -27,7 +27,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "sample.influxdb.crossplane.io"
+	Group   = "orgs.influxdb.crossplane.io"
 	Version = "v1alpha1"
 )
 

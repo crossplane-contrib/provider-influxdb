@@ -6,18 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: mytypes.sample.influxdb.crossplane.io
+  name: organizations.orgs.influxdb.crossplane.io
 spec:
-  group: sample.influxdb.crossplane.io
+  group: orgs.influxdb.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - influxdb
-    kind: MyType
-    listKind: MyTypeList
-    plural: mytypes
-    singular: mytype
+    kind: Organization
+    listKind: OrganizationList
+    plural: organizations
+    singular: organization
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -33,7 +33,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: A MyType is an example API type.
+        description: An Organization represents an organization in InfluxDB.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -48,7 +48,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: A MyTypeSpec defines the desired state of a MyType.
+            description: A OrganizationSpec defines the desired state of a Organization.
             properties:
               deletionPolicy:
                 default: Delete
@@ -60,12 +60,11 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: MyTypeParameters are the configurable fields of a MyType.
+                description: OrganizationParameters are the configurable fields of
+                  a Organization.
                 properties:
-                  configurableField:
+                  description:
                     type: string
-                required:
-                - configurableField
                 type: object
               providerConfigRef:
                 default:
@@ -112,12 +111,49 @@ spec:
             - forProvider
             type: object
           status:
-            description: A MyTypeStatus represents the observed state of a MyType.
+            description: A OrganizationStatus represents the observed state of a Organization.
             properties:
               atProvider:
-                description: MyTypeObservation are the observable fields of a MyType.
+                description: OrganizationObservation are the observable fields of
+                  a Organization.
                 properties:
-                  observableField:
+                  createdAt:
+                    format: date-time
+                    type: string
+                  id:
+                    type: string
+                  links:
+                    description: Links is the URIs of all links.
+                    properties:
+                      buckets:
+                        description: URI of resource.
+                        type: string
+                      dashboards:
+                        description: URI of resource.
+                        type: string
+                      labels:
+                        description: URI of resource.
+                        type: string
+                      members:
+                        description: URI of resource.
+                        type: string
+                      owners:
+                        description: URI of resource.
+                        type: string
+                      secrets:
+                        description: URI of resource.
+                        type: string
+                      self:
+                        description: URI of resource.
+                        type: string
+                      tasks:
+                        description: URI of resource.
+                        type: string
+                    type: object
+                  status:
+                    type: string
+                  updatedAt:
+                    format: date-time
                     type: string
                 type: object
               conditions:

@@ -21,40 +21,28 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/utils/pointer"
-
 	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-
-	"github.com/influxdata/influxdb-client-go/v2/domain"
-
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
-
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/influxdata/influxdb-client-go/v2/api"
-
+	"github.com/influxdata/influxdb-client-go/v2/domain"
 	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
 	"github.com/crossplane-contrib/provider-influxdb/apis/orgs/v1alpha1"
-	apisv1alpha1 "github.com/crossplane-contrib/provider-influxdb/apis/v1alpha1"
+	"github.com/crossplane-contrib/provider-influxdb/internal/clients"
 )
 
 const (
 	errNotOrganization = "managed resource is not an Organization custom resource"
-	errTrackPCUsage    = "cannot track ProviderConfig usage"
-	errGetPC           = "cannot get ProviderConfig"
-	errGetCreds        = "cannot get credentials"
 )
 
 // Setup adds a controller that reconciles Organization managed resources.
@@ -67,10 +55,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1alpha1.OrganizationGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
-			kube:  mgr.GetClient(),
-			usage: resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
-		}),
+		managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 		managed.WithLogger(l.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))))
 
@@ -84,8 +69,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 // A connector is expected to produce an ExternalClient when its Connect method
 // is called.
 type connector struct {
-	kube  client.Client
-	usage resource.Tracker
+	kube client.Client
 }
 
 // Connect typically produces an ExternalClient by:
@@ -94,27 +78,11 @@ type connector struct {
 // 3. Getting the credentials specified by the ProviderConfig.
 // 4. Using the credentials to form a client.
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.Organization)
-	if !ok {
-		return nil, errors.New(errNotOrganization)
-	}
-
-	if err := c.usage.Track(ctx, mg); err != nil {
-		return nil, errors.Wrap(err, errTrackPCUsage)
-	}
-
-	pc := &apisv1alpha1.ProviderConfig{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.GetProviderConfigReference().Name}, pc); err != nil {
-		return nil, errors.Wrap(err, errGetPC)
-	}
-
-	cd := pc.Spec.Credentials
-	token, err := resource.CommonCredentialExtractor(ctx, cd.Source, c.kube, cd.CommonCredentialSelectors)
+	cl, err := clients.NewClient(ctx, c.kube, mg)
 	if err != nil {
-		return nil, errors.Wrap(err, errGetCreds)
+		return nil, errors.Wrap(err, "cannot create a new client")
 	}
-
-	return &external{api: influxdb2.NewClient(pc.Spec.Endpoint, string(token)).OrganizationsAPI()}, nil
+	return &external{api: cl.OrganizationsAPI()}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an

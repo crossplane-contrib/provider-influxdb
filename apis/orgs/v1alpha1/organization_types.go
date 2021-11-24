@@ -37,11 +37,7 @@ type OrganizationObservation struct {
 	Status    string      `json:"status,omitempty"`
 	CreatedAt metav1.Time `json:"createdAt,omitempty"`
 	UpdatedAt metav1.Time `json:"updatedAt,omitempty"`
-
-	// NOTE(muvaf): Even though it's called "Links", the model in the client
-	// lets you specify a single string for every link.
-
-	Links Links `json:"links,omitempty"`
+	Links     Links       `json:"links,omitempty"`
 }
 
 // Links is the URIs of all links.

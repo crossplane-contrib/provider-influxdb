@@ -67,17 +67,10 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		Complete(r)
 }
 
-// A connector is expected to produce an ExternalClient when its Connect method
-// is called.
 type connector struct {
 	kube client.Client
 }
 
-// Connect typically produces an ExternalClient by:
-// 1. Tracking that the managed resource is using a ProviderConfig.
-// 2. Getting the managed resource's ProviderConfig.
-// 3. Getting the credentials specified by the ProviderConfig.
-// 4. Using the credentials to form a client.
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cl, err := clients.NewClient(ctx, c.kube, mg)
 	if err != nil {
@@ -86,11 +79,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	return &external{api: cl.OrganizationsAPI()}, nil
 }
 
-// An ExternalClient observes, then either creates, updates, or deletes an
-// external resource to ensure it reflects the managed resource's desired state.
 type external struct {
-	// A 'client' used to connect to the external resource API. In practice this
-	// would be something like an AWS SDK client.
 	api clients.OrganizationsAPI
 }
 
@@ -107,9 +96,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	cr.Status.AtProvider = GetOrganizationObservation(org)
 	switch cr.Status.AtProvider.Status {
-	case "active":
+	// Empty string also means active.
+	case string(domain.OrganizationStatusActive), "":
 		cr.SetConditions(v1.Available())
-	case "inactive":
+	case string(domain.OrganizationStatusInactive):
 		cr.SetConditions(v1.Unavailable())
 	}
 

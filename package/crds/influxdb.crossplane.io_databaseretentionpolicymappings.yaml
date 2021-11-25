@@ -1,0 +1,249 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.2
+  creationTimestamp: null
+  name: databaseretentionpolicymappings.influxdb.crossplane.io
+spec:
+  group: influxdb.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - influxdb
+    kind: DatabaseRetentionPolicyMapping
+    listKind: DatabaseRetentionPolicyMappingList
+    plural: databaseretentionpolicymappings
+    shortNames:
+    - dbrp
+    singular: databaseretentionpolicymapping
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.bindingPhase
+      name: STATUS
+      type: string
+    - jsonPath: .status.atProvider.state
+      name: STATE
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: An DatabaseRetentionPolicyMapping represents an organization
+          in InfluxDB.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: A DatabaseRetentionPolicyMappingSpec defines the desired
+              state of a DatabaseRetentionPolicyMapping.
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: DatabaseRetentionPolicyMappingParameters are the configurable
+                  fields of a DatabaseRetentionPolicyMapping.
+                properties:
+                  bucketID:
+                    description: BucketID is the ID of the Bucket this DatabaseRetentionPolicyMapping
+                      will be applied. Either BucketID or BucketIDRef or BucketIDSelector
+                      has to be given during creation.
+                    type: string
+                  bucketIDRef:
+                    description: BucketIDRef references a Bucket to retrieve its ID
+                      to populate BucketID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  bucketIDSelector:
+                    description: BucketIDSelector selects a reference to a Bucket
+                      to populate BucketIDRef.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  database:
+                    description: InfluxDB v1 database
+                    type: string
+                  default:
+                    description: Specify if this mapping represents the default retention
+                      policy for the database specificed.
+                    type: boolean
+                  org:
+                    description: The organization that owns this mapping. Either Org
+                      or OrgRef or OrgSelector has to be given during creation.
+                    type: string
+                  orgRef:
+                    description: OrgRef references an Organization to retrieve its
+                      name to populate Org.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  orgSelector:
+                    description: OrgSelector selects a reference to an Organization
+                      to populate OrgRef.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  retentionPolicy:
+                    description: InfluxDB v1 retention policy
+                    type: string
+                required:
+                - database
+                - retentionPolicy
+                type: object
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: A DatabaseRetentionPolicyMappingStatus represents the observed
+              state of a DatabaseRetentionPolicyMapping.
+            properties:
+              atProvider:
+                description: DatabaseRetentionPolicyMappingObservation are the observable
+                  fields of a DatabaseRetentionPolicyMapping.
+                properties:
+                  links:
+                    description: DBRPLinks defines model for Links.
+                    properties:
+                      self:
+                        description: URI of resource.
+                        type: string
+                    required:
+                    - self
+                    type: object
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

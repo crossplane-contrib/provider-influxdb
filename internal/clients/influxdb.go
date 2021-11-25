@@ -19,6 +19,9 @@ package clients
 import (
 	"context"
 	"net/http"
+	"strings"
+
+	"github.com/influxdata/influxdb-client-go/v2/domain"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	influxdbv2 "github.com/influxdata/influxdb-client-go/v2"
@@ -53,6 +56,36 @@ func NewClient(ctx context.Context, kube client.Client, mg resource.Managed) (in
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 	return influxdbv2.NewClient(pc.Spec.Endpoint, string(token)), nil
+}
+
+// NewClientWithResponses returns the bare client. Use this only if NewClient
+// does not meet your needs.
+func NewClientWithResponses(ctx context.Context, kube client.Client, mg resource.Managed) (*domain.ClientWithResponses, error) {
+	pc := &v1alpha1.ProviderConfig{}
+	if err := kube.Get(ctx, types.NamespacedName{Name: mg.GetProviderConfigReference().Name}, pc); err != nil {
+		return nil, errors.Wrap(err, errGetPC)
+	}
+
+	if err := resource.NewProviderConfigUsageTracker(kube, &v1alpha1.ProviderConfigUsage{}).Track(ctx, mg); err != nil {
+		return nil, errors.Wrap(err, errTrackPCUsage)
+	}
+
+	cd := pc.Spec.Credentials
+	token, err := resource.CommonCredentialExtractor(ctx, cd.Source, kube, cd.CommonCredentialSelectors)
+	if err != nil {
+		return nil, errors.Wrap(err, errGetCreds)
+	}
+	normServerURL := pc.Spec.Endpoint
+	if !strings.HasSuffix(normServerURL, "/") {
+		// For subsequent path parts concatenation, url has to end with '/'
+		normServerURL = pc.Spec.Endpoint + "/"
+	}
+	authorization := ""
+	if len(string(token)) > 0 {
+		authorization = "Token " + string(token)
+	}
+	service := apihttp.NewService(normServerURL, authorization, apihttp.DefaultOptions())
+	return domain.NewClientWithResponses(service), nil
 }
 
 // IsNotFound returns whether the error is of type NotFound.

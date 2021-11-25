@@ -97,7 +97,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	bucket, err := c.api.FindBucketByName(ctx, meta.GetExternalName(cr))
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound(meta.GetExternalName(cr)), err), errFindBucket)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFoundFn(meta.GetExternalName(cr)), err), errFindBucket)
 	}
 
 	cr.Status.AtProvider = GenerateBucketObservation(bucket)

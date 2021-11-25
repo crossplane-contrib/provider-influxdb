@@ -80,10 +80,11 @@ type OrganizationStatus struct {
 // +kubebuilder:object:root=true
 
 // An Organization represents an organization in InfluxDB.
-// +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.bindingPhase"
-// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.state"
+// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+// +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,influxdb}
 type Organization struct {
 	metav1.TypeMeta   `json:",inline"`

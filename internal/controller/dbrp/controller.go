@@ -19,8 +19,6 @@ package dbrp
 import (
 	"context"
 
-	"k8s.io/utils/pointer"
-
 	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -31,6 +29,7 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/domain"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -106,7 +105,8 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	dbrps, err := c.api.GetDBRPsWithResponse(ctx, &domain.GetDBRPsParams{
-		Id: pointer.String(meta.GetExternalName(cr)),
+		Org: &cr.Spec.ForProvider.Org,
+		Id:  pointer.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errGetDatabaseRetentionPolicyMapping)
@@ -135,15 +135,18 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotDatabaseRetentionPolicyMapping)
 	}
 
-	_, err := c.api.PostDBRPWithResponse(ctx, &domain.PostDBRPParams{}, domain.PostDBRPJSONRequestBody{
+	resp, err := c.api.PostDBRPWithResponse(ctx, &domain.PostDBRPParams{}, domain.PostDBRPJSONRequestBody{
 		BucketID:        cr.Spec.ForProvider.BucketID,
 		Database:        cr.Spec.ForProvider.Database,
 		Default:         cr.Spec.ForProvider.Default,
 		Org:             &cr.Spec.ForProvider.Org,
 		RetentionPolicy: cr.Spec.ForProvider.RetentionPolicy,
 	})
-
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreateDatabaseRetentionPolicyMapping)
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreateDatabaseRetentionPolicyMapping)
+	}
+	meta.SetExternalName(cr, resp.JSON201.Id)
+	return managed.ExternalCreation{}, nil
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {

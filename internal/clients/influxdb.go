@@ -75,6 +75,8 @@ func NewClientWithResponses(ctx context.Context, kube client.Client, mg resource
 	if err != nil {
 		return nil, errors.Wrap(err, errGetCreds)
 	}
+	// NOTE(muvaf): The rest of this function is taken from the content of
+	// influxdbv2.NewClient.
 	normServerURL := pc.Spec.Endpoint
 	if !strings.HasSuffix(normServerURL, "/") {
 		// For subsequent path parts concatenation, url has to end with '/'

@@ -30,8 +30,8 @@ type DatabaseRetentionPolicyMappingParameters struct {
 	// be applied.
 	// Either BucketID or BucketIDRef or BucketIDSelector has to be given during
 	// creation.
-	// +crossplane:generate:reference:type=Organization
-	// +crossplane:generate:reference:extractor=OrganizationID()
+	// +crossplane:generate:reference:type=Bucket
+	// +crossplane:generate:reference:extractor=BucketID()
 	BucketID string `json:"bucketID,omitempty"`
 
 	// BucketIDRef references a Bucket to retrieve its ID to populate BucketID.
@@ -93,11 +93,12 @@ type DatabaseRetentionPolicyMappingStatus struct {
 
 // +kubebuilder:object:root=true
 
-// An DatabaseRetentionPolicyMapping represents an organization in InfluxDB.
-// +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.bindingPhase"
-// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.state"
+// An DatabaseRetentionPolicyMapping represents an DBRP in InfluxDB.
+// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+// +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,influxdb},shortName=dbrp
 type DatabaseRetentionPolicyMapping struct {
 	metav1.TypeMeta   `json:",inline"`

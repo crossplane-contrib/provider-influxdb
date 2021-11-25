@@ -59,12 +59,12 @@ func (mg *DatabaseRetentionPolicyMapping) ResolveReferences(ctx context.Context,
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.BucketID,
-		Extract:      OrganizationID(),
+		Extract:      BucketID(),
 		Reference:    mg.Spec.ForProvider.BucketIDRef,
 		Selector:     mg.Spec.ForProvider.BucketIDSelector,
 		To: reference.To{
-			List:    &OrganizationList{},
-			Managed: &Organization{},
+			List:    &BucketList{},
+			Managed: &Bucket{},
 		},
 	})
 	if err != nil {

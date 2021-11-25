@@ -21,11 +21,14 @@ spec:
   scope: Cluster
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .status.bindingPhase
-      name: STATUS
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
       type: string
-    - jsonPath: .status.atProvider.state
-      name: STATE
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
@@ -33,8 +36,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: An DatabaseRetentionPolicyMapping represents an organization
-          in InfluxDB.
+        description: An DatabaseRetentionPolicyMapping represents an DBRP in InfluxDB.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

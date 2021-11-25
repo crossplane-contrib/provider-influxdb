@@ -30,3 +30,13 @@ func OrganizationID() reference.ExtractValueFn {
 		return ""
 	}
 }
+
+// BucketID extracts ID of organization from Bucket resource.
+func BucketID() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		if cr, ok := mg.(*Bucket); ok {
+			return cr.Status.AtProvider.ID
+		}
+		return ""
+	}
+}

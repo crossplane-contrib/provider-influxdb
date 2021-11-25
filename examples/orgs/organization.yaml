@@ -1,0 +1,9 @@
+apiVersion: orgs.influxdb.crossplane.io/v1alpha1
+kind: Organization
+metadata:
+  name: example-org
+spec:
+  forProvider:
+    description: test-description
+  providerConfigRef:
+    name: default

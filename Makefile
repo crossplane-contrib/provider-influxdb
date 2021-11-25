@@ -44,7 +44,7 @@ GO111MODULE = on
 # Setup Images
 
 DOCKER_REGISTRY := crossplane
-IMAGES = provider-jet-gcp provider-jet-gcp-controller
+IMAGES = provider-influxdb provider-influxdb-controller
 -include build/makelib/image.mk
 
 # ====================================================================================
@@ -73,6 +73,8 @@ crds.clean:
 	@find package/crds -name '*.yaml' -exec sed -i.sed -e '1,2d' {} \; || $(FAIL)
 	@find package/crds -name '*.yaml.sed' -delete || $(FAIL)
 	@$(OK) cleaned generated CRDs
+
+generate.done: crds.clean
 
 # Update the submodules, such as the common build scripts.
 submodules:

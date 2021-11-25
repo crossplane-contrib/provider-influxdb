@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,14 +27,19 @@ import (
 
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
-	// Credentials required to authenticate to this provider.
+
+	// Endpoint is the URL of the InfluxDB instance.
+	Endpoint string `json:"endpoint"`
+
+	// Credentials required to authenticate to InfluxDB. It should point to the
+	// auth token.
 	Credentials ProviderCredentials `json:"credentials"`
 }
 
 // ProviderCredentials required to authenticate.
 type ProviderCredentials struct {
-	// Source of the provider credentials.
-	// +kubebuilder:validation:Enum=None;Secret;InjectedIdentity;Environment;Filesystem
+	// Source of the provider credentials. Only "Secret" is accepted currently.
+	// +kubebuilder:validation:Enum=Secret
 	Source xpv1.CredentialsSource `json:"source"`
 
 	xpv1.CommonCredentialSelectors `json:",inline"`

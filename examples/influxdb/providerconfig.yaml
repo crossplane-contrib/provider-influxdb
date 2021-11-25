@@ -1,0 +1,13 @@
+---
+apiVersion: influxdb.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  endpoint: http://influxdb.crossplane-system.svc.cluster.local:8086
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: influxdb-token
+      key: authToken

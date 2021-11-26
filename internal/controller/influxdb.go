@@ -17,11 +17,11 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/crossplane-contrib/provider-influxdb/internal/controller/bucket"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane-contrib/provider-influxdb/internal/controller/bucket"
 	"github.com/crossplane-contrib/provider-influxdb/internal/controller/organization"
 	"github.com/crossplane-contrib/provider-influxdb/internal/controller/providerconfig"
 )

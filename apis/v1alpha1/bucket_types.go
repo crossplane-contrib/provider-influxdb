@@ -125,7 +125,7 @@ type BucketStatus struct {
 
 // +kubebuilder:object:root=true
 
-// An Bucket represents an organization in InfluxDB.
+// An Bucket represents a bucket in InfluxDB.
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.bindingPhase"
 // +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.state"

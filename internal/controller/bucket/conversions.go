@@ -119,6 +119,17 @@ func LateInitialize(params *v1alpha1.BucketParameters, obs *domain.Bucket) bool 
 		params.SchemaType = string(*obs.SchemaType)
 		return true
 	}
+	sort.SliceStable(params.RetentionRules, func(i, j int) bool {
+		return params.RetentionRules[i].Type < params.RetentionRules[j].Type
+	})
+	sort.SliceStable(obs.RetentionRules, func(i, j int) bool {
+		return string(obs.RetentionRules[i].Type) < string(obs.RetentionRules[j].Type)
+	})
+	for i := range params.RetentionRules {
+		if params.RetentionRules[i].Type == string(obs.RetentionRules[i].Type) {
+			params.RetentionRules[i].ShardGroupDurationSeconds = li.LateInitializeInt64Ptr(params.RetentionRules[i].ShardGroupDurationSeconds, obs.RetentionRules[i].ShardGroupDurationSeconds)
+		}
+	}
 	return li.IsChanged()
 }
 
@@ -128,27 +139,22 @@ func IsUpToDate(params v1alpha1.BucketParameters, obs *domain.Bucket) bool {
 		return false
 	}
 	sort.SliceStable(params.RetentionRules, func(i, j int) bool {
-		return retentionRuleKey(params.RetentionRules[i].Type, params.RetentionRules[i].EverySeconds, params.RetentionRules[i].ShardGroupDurationSeconds) <
-			retentionRuleKey(params.RetentionRules[j].Type, params.RetentionRules[j].EverySeconds, params.RetentionRules[j].ShardGroupDurationSeconds)
+		return params.RetentionRules[i].Type < params.RetentionRules[j].Type
 	})
 	sort.SliceStable(obs.RetentionRules, func(i, j int) bool {
-		return retentionRuleKey(string(obs.RetentionRules[i].Type), obs.RetentionRules[i].EverySeconds, obs.RetentionRules[i].ShardGroupDurationSeconds) <
-			retentionRuleKey(string(obs.RetentionRules[j].Type), obs.RetentionRules[j].EverySeconds, obs.RetentionRules[j].ShardGroupDurationSeconds)
+		return string(obs.RetentionRules[i].Type) < string(obs.RetentionRules[j].Type)
 	})
 	for i := range params.RetentionRules {
 		if params.RetentionRules[i].Type != string(obs.RetentionRules[i].Type) ||
 			params.RetentionRules[i].EverySeconds != obs.RetentionRules[i].EverySeconds ||
-			pointer.Int64Deref(params.RetentionRules[i].ShardGroupDurationSeconds, 604800) != pointer.Int64Deref(obs.RetentionRules[i].ShardGroupDurationSeconds, 0) {
+			pointer.Int64Deref(params.RetentionRules[i].ShardGroupDurationSeconds, 0) != pointer.Int64Deref(obs.RetentionRules[i].ShardGroupDurationSeconds, 0) {
 			return false
 		}
 	}
 	return pointer.StringDeref(obs.Description, "") == pointer.StringDeref(params.Description, "")
 }
 
-func retentionRuleKey(ruleType string, everySeconds int64, shardGroupDurationSeconds *int64) string {
-	return fmt.Sprintf("%s-%d-%d", ruleType, everySeconds, pointer.Int64Deref(shardGroupDurationSeconds, 0))
-}
-
+// IsNotFound returns an ErrorIs function for the given bucket name.
 func IsNotFound(name string) resource.ErrorIs {
 	return func(err error) bool {
 		return strings.Contains(err.Error(), fmt.Sprintf("bucket '%s' not found", name))

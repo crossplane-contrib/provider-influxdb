@@ -18,6 +18,7 @@ package bucket
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -25,7 +26,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/influxdb-client-go/v2/api/http"
 	"github.com/influxdata/influxdb-client-go/v2/domain"
 	"github.com/pkg/errors"
 	"k8s.io/utils/pointer"
@@ -77,8 +77,8 @@ func TestObserve(t *testing.T) {
 			args: args{
 				mg: &v1alpha1.Bucket{},
 				api: &clients.MockBucketsAPI{
-					FindBucketByNameFn: func(_ context.Context, _ string) (*domain.Bucket, error) {
-						return nil, &http.Error{StatusCode: 404}
+					FindBucketByNameFn: func(_ context.Context, name string) (*domain.Bucket, error) {
+						return nil, fmt.Errorf("bucket '%s' not found", name)
 					},
 				},
 			},

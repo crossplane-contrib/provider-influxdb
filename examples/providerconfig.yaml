@@ -4,7 +4,7 @@ kind: ProviderConfig
 metadata:
   name: default
 spec:
-  endpoint: http://localhost:8086
+  endpoint: http://influxdb.crossplane-system.svc.cluster.local:8086
   credentials:
     source: Secret
     secretRef:

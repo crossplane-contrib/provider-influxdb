@@ -1,0 +1,14 @@
+apiVersion: influxdb.crossplane.io/v1alpha1
+kind: DatabaseRetentionPolicyMapping
+metadata:
+  name: example-dbrp
+spec:
+  forProvider:
+    orgRef:
+      name: example-org
+    bucketIDRef:
+      name: example-bucket
+    database: dbname
+    retentionPolicy: example-rp
+  providerConfigRef:
+    name: default

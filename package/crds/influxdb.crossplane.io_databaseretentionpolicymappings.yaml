@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: organizations.influxdb.crossplane.io
+  name: databaseretentionpolicymappings.influxdb.crossplane.io
 spec:
   group: influxdb.crossplane.io
   names:
@@ -12,10 +12,12 @@ spec:
     - crossplane
     - managed
     - influxdb
-    kind: Organization
-    listKind: OrganizationList
-    plural: organizations
-    singular: organization
+    kind: DatabaseRetentionPolicyMapping
+    listKind: DatabaseRetentionPolicyMappingList
+    plural: databaseretentionpolicymappings
+    shortNames:
+    - dbrp
+    singular: databaseretentionpolicymapping
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -34,7 +36,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: An Organization represents an organization in InfluxDB.
+        description: An DatabaseRetentionPolicyMapping represents an DBRP in InfluxDB.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -49,7 +51,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: A OrganizationSpec defines the desired state of a Organization.
+            description: A DatabaseRetentionPolicyMappingSpec defines the desired
+              state of a DatabaseRetentionPolicyMapping.
             properties:
               deletionPolicy:
                 default: Delete
@@ -61,11 +64,81 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: OrganizationParameters are the configurable fields of
-                  a Organization.
+                description: DatabaseRetentionPolicyMappingParameters are the configurable
+                  fields of a DatabaseRetentionPolicyMapping.
                 properties:
-                  description:
+                  bucketID:
+                    description: BucketID is the ID of the Bucket this DatabaseRetentionPolicyMapping
+                      will be applied. Either BucketID or BucketIDRef or BucketIDSelector
+                      has to be given during creation.
                     type: string
+                  bucketIDRef:
+                    description: BucketIDRef references a Bucket to retrieve its ID
+                      to populate BucketID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  bucketIDSelector:
+                    description: BucketIDSelector selects a reference to a Bucket
+                      to populate BucketIDRef.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  database:
+                    description: InfluxDB v1 database
+                    type: string
+                  default:
+                    description: Specify if this mapping represents the default retention
+                      policy for the database specificed.
+                    type: boolean
+                  org:
+                    description: The organization that owns this mapping. Either Org
+                      or OrgRef or OrgSelector has to be given during creation.
+                    type: string
+                  orgRef:
+                    description: OrgRef references an Organization to retrieve its
+                      name to populate Org.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  orgSelector:
+                    description: OrgSelector selects a reference to an Organization
+                      to populate OrgRef.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
+                  retentionPolicy:
+                    description: InfluxDB v1 retention policy
+                    type: string
+                required:
+                - database
+                - retentionPolicy
                 type: object
               providerConfigRef:
                 default:
@@ -112,50 +185,22 @@ spec:
             - forProvider
             type: object
           status:
-            description: A OrganizationStatus represents the observed state of a Organization.
+            description: A DatabaseRetentionPolicyMappingStatus represents the observed
+              state of a DatabaseRetentionPolicyMapping.
             properties:
               atProvider:
-                description: OrganizationObservation are the observable fields of
-                  a Organization.
+                description: DatabaseRetentionPolicyMappingObservation are the observable
+                  fields of a DatabaseRetentionPolicyMapping.
                 properties:
-                  createdAt:
-                    format: date-time
-                    type: string
-                  id:
-                    type: string
                   links:
-                    description: OrganizationLinks is the URIs of all links.
+                    description: DBRPLinks defines model for Links.
                     properties:
-                      buckets:
-                        description: URI of resource.
-                        type: string
-                      dashboards:
-                        description: URI of resource.
-                        type: string
-                      labels:
-                        description: URI of resource.
-                        type: string
-                      members:
-                        description: URI of resource.
-                        type: string
-                      owners:
-                        description: URI of resource.
-                        type: string
-                      secrets:
-                        description: URI of resource.
-                        type: string
                       self:
                         description: URI of resource.
                         type: string
-                      tasks:
-                        description: URI of resource.
-                        type: string
+                    required:
+                    - self
                     type: object
-                  status:
-                    type: string
-                  updatedAt:
-                    format: date-time
-                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.

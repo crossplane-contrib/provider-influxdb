@@ -22,6 +22,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-influxdb/internal/controller/bucket"
+	"github.com/crossplane-contrib/provider-influxdb/internal/controller/dbrp"
 	"github.com/crossplane-contrib/provider-influxdb/internal/controller/organization"
 	"github.com/crossplane-contrib/provider-influxdb/internal/controller/providerconfig"
 )
@@ -33,6 +34,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 		providerconfig.Setup,
 		organization.Setup,
 		bucket.Setup,
+		dbrp.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

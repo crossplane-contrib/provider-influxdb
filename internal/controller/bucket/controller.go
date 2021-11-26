@@ -66,17 +66,10 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		Complete(r)
 }
 
-// A connector is expected to produce an ExternalClient when its Connect method
-// is called.
 type connector struct {
 	kube client.Client
 }
 
-// Connect typically produces an ExternalClient by:
-// 1. Tracking that the managed resource is using a ProviderConfig.
-// 2. Getting the managed resource's ProviderConfig.
-// 3. Getting the credentials specified by the ProviderConfig.
-// 4. Using the credentials to form a client.
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cl, err := clients.NewClient(ctx, c.kube, mg)
 	if err != nil {
@@ -97,7 +90,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	bucket, err := c.api.FindBucketByName(ctx, meta.GetExternalName(cr))
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound(meta.GetExternalName(cr)), err), errFindBucket)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFoundFn(meta.GetExternalName(cr)), err), errFindBucket)
 	}
 
 	cr.Status.AtProvider = GenerateBucketObservation(bucket)

@@ -49,3 +49,45 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 
 	return nil
 }
+
+// ResolveReferences of this DatabaseRetentionPolicyMapping.
+func (mg *DatabaseRetentionPolicyMapping) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.BucketID,
+		Extract:      BucketID(),
+		Reference:    mg.Spec.ForProvider.BucketIDRef,
+		Selector:     mg.Spec.ForProvider.BucketIDSelector,
+		To: reference.To{
+			List:    &BucketList{},
+			Managed: &Bucket{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.BucketID")
+	}
+	mg.Spec.ForProvider.BucketID = rsp.ResolvedValue
+	mg.Spec.ForProvider.BucketIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.Org,
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.OrgRef,
+		Selector:     mg.Spec.ForProvider.OrgSelector,
+		To: reference.To{
+			List:    &OrganizationList{},
+			Managed: &Organization{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.Org")
+	}
+	mg.Spec.ForProvider.Org = rsp.ResolvedValue
+	mg.Spec.ForProvider.OrgRef = rsp.ResolvedReference
+
+	return nil
+}

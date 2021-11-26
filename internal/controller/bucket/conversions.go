@@ -154,8 +154,9 @@ func IsUpToDate(params v1alpha1.BucketParameters, obs *domain.Bucket) bool {
 	return pointer.StringDeref(obs.Description, "") == pointer.StringDeref(params.Description, "")
 }
 
-// IsNotFound returns an ErrorIs function for the given bucket name.
-func IsNotFound(name string) resource.ErrorIs {
+// IsNotFoundFn returns an ErrorIs function that can tell whether the error is
+// of kind NotFound.
+func IsNotFoundFn(name string) resource.ErrorIs {
 	return func(err error) bool {
 		return strings.Contains(err.Error(), fmt.Sprintf("bucket '%s' not found", name))
 	}

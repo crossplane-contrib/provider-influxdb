@@ -17,9 +17,6 @@ limitations under the License.
 package organization
 
 import (
-	"net/http"
-
-	apihttp "github.com/influxdata/influxdb-client-go/v2/api/http"
 	"github.com/influxdata/influxdb-client-go/v2/domain"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
@@ -68,10 +65,4 @@ func GetOrganizationObservation(org *domain.Organization) v1alpha1.OrganizationO
 		}
 	}
 	return o
-}
-
-// IsNotFound returns whether the error is of kind NotFound.
-func IsNotFound(err error) bool {
-	hErr, ok := err.(*apihttp.Error)
-	return ok && hErr.StatusCode == http.StatusNotFound
 }

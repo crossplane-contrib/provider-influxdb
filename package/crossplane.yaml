@@ -1,14 +1,16 @@
 apiVersion: meta.pkg.crossplane.io/v1alpha1
 kind: Provider
 metadata:
-  name: provider-azure
+  name: provider-influxdb
   annotations:
     meta.crossplane.io/maintainer: Crossplane Maintainers <info@crossplane.io>
-    meta.crossplane.io/source: github.com/crossplane/provider-azure
+    meta.crossplane.io/source: github.com/crossplane-contrib/provider-influxdb
     meta.crossplane.io/license: Apache-2.0
     friendly-name.meta.crossplane.io: Provider InfluxDB
     friendly-group-name.meta.crossplane.io/influxdb.crossplane.io: InfluxDB
-    friendly-kind-name.meta.crossplane.io/organizations.azure.crossplane.io: Organization
+    friendly-kind-name.meta.crossplane.io/organizations.influxdb.crossplane.io: Organization
+    friendly-kind-name.meta.crossplane.io/buckets.influxdb.crossplane.io: Bucket
+    friendly-kind-name.meta.crossplane.io/databaseretentionpolicymappings.influxdb.crossplane.io: Database Retention Policy Mapping
 spec:
   controller:
     image: crossplane/provider-influxdb-controller:VERSION

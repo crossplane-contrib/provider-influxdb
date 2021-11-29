@@ -1,10 +1,18 @@
+# You can use the following commands for local testing:
+# helm upgrade --install influxdb influxdata/influxdb2
+# Auth token to be used in credentials Secret:
+# $ kubectl get secret influxdb-influxdb2-auth -o "jsonpath={.data['admin-token']}" --namespace default | base64 --decode
+# Get the Service name of InfluxDB:
+# $ kubectl get svc -o name
+# Use it in the endpoint string like the following:
+# http://${SVC_NAME}.${SVC_NAMESPACE}.svc.cluster.local:80
 ---
 apiVersion: influxdb.crossplane.io/v1alpha1
 kind: ProviderConfig
 metadata:
   name: default
 spec:
-  endpoint: http://influxdb.crossplane-system.svc.cluster.local:8086
+  endpoint: http://influxdb-influxdb2.default.svc.cluster.local:80
   credentials:
     source: Secret
     secretRef:

@@ -78,7 +78,7 @@ func TestObserve(t *testing.T) {
 				mg: &v1alpha1.Bucket{},
 				api: &clients.MockBucketsAPI{
 					FindBucketByNameFn: func(_ context.Context, name string) (*domain.Bucket, error) {
-						return nil, fmt.Errorf("bucket '%s' not found", name)
+						return nil, fmt.Errorf(`bucket "%s" not found`, name)
 					},
 				},
 			},

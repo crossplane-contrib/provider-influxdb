@@ -158,6 +158,6 @@ func IsUpToDate(params v1alpha1.BucketParameters, obs *domain.Bucket) bool {
 // of kind NotFound.
 func IsNotFoundFn(name string) resource.ErrorIs {
 	return func(err error) bool {
-		return strings.Contains(err.Error(), fmt.Sprintf("bucket '%s' not found", name))
+		return strings.Contains(err.Error(), fmt.Sprintf(`bucket "%s" not found`, name))
 	}
 }

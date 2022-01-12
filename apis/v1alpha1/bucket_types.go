@@ -46,7 +46,8 @@ type BucketParameters struct {
 	RP *string `json:"rp,omitempty"`
 
 	// Rules to expire or retain data. No rules means data never expires.
-	RetentionRules []RetentionRule `json:"retentionRules"`
+	// +optional
+	RetentionRules []RetentionRule `json:"retentionRules,omitempty"`
 
 	// +kubebuilder:validation:Enum=implicit;explicit
 	SchemaType string `json:"schemaType,omitempty"`

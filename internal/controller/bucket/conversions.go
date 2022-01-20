@@ -117,33 +117,50 @@ func LateInitialize(params *v1alpha1.BucketParameters, obs *domain.Bucket) bool 
 	params.RP = li.LateInitializeStringPtr(params.RP, obs.Rp)
 	if params.SchemaType == "" && obs.SchemaType != nil && string(*obs.SchemaType) != "" {
 		params.SchemaType = string(*obs.SchemaType)
-		return true
+		li.SetChanged()
 	}
-	sort.SliceStable(params.RetentionRules, func(i, j int) bool {
-		return params.RetentionRules[i].Type < params.RetentionRules[j].Type
-	})
-	sort.SliceStable(obs.RetentionRules, func(i, j int) bool {
-		return string(obs.RetentionRules[i].Type) < string(obs.RetentionRules[j].Type)
-	})
-	for i := range params.RetentionRules {
-		if params.RetentionRules[i].Type == string(obs.RetentionRules[i].Type) {
-			params.RetentionRules[i].ShardGroupDurationSeconds = li.LateInitializeInt64Ptr(params.RetentionRules[i].ShardGroupDurationSeconds, obs.RetentionRules[i].ShardGroupDurationSeconds)
+
+	if len(params.RetentionRules) == 0 && len(obs.RetentionRules) > 0 {
+		sort.SliceStable(obs.RetentionRules, func(i, j int) bool {
+			return string(obs.RetentionRules[i].Type) < string(obs.RetentionRules[j].Type)
+		})
+
+		params.RetentionRules = make([]v1alpha1.RetentionRule, len(obs.RetentionRules))
+		for i := range obs.RetentionRules {
+			params.RetentionRules[i] = v1alpha1.RetentionRule{
+				Type:                      string(obs.RetentionRules[i].Type),
+				EverySeconds:              obs.RetentionRules[i].EverySeconds,
+				ShardGroupDurationSeconds: obs.RetentionRules[i].ShardGroupDurationSeconds,
+			}
 		}
+		li.SetChanged()
 	}
 	return li.IsChanged()
 }
 
 // IsUpToDate returns whether an update call is necessary.
 func IsUpToDate(params v1alpha1.BucketParameters, obs *domain.Bucket) bool {
+	// RetentionRules observation is empty if EverySeconds is set to 0
+	if len(obs.RetentionRules) == 0 {
+		obs.RetentionRules = []domain.RetentionRule{{Type: "expire"}}
+	}
+	// If params have no RetentionRules, assume no expiry
+	if len(params.RetentionRules) == 0 {
+		params.RetentionRules = []v1alpha1.RetentionRule{{Type: "expire"}}
+	}
+
 	if len(params.RetentionRules) != len(obs.RetentionRules) {
 		return false
 	}
+
 	sort.SliceStable(params.RetentionRules, func(i, j int) bool {
 		return params.RetentionRules[i].Type < params.RetentionRules[j].Type
 	})
+
 	sort.SliceStable(obs.RetentionRules, func(i, j int) bool {
 		return string(obs.RetentionRules[i].Type) < string(obs.RetentionRules[j].Type)
 	})
+
 	for i := range params.RetentionRules {
 		if params.RetentionRules[i].Type != string(obs.RetentionRules[i].Type) ||
 			params.RetentionRules[i].EverySeconds != obs.RetentionRules[i].EverySeconds ||
@@ -151,6 +168,7 @@ func IsUpToDate(params v1alpha1.BucketParameters, obs *domain.Bucket) bool {
 			return false
 		}
 	}
+
 	return pointer.StringDeref(obs.Description, "") == pointer.StringDeref(params.Description, "")
 }
 

@@ -125,8 +125,6 @@ spec:
                     - implicit
                     - explicit
                     type: string
-                required:
-                - retentionRules
                 type: object
               providerConfigRef:
                 default:

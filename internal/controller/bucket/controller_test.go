@@ -112,6 +112,56 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
+		"ExpireNoUpdateNeeded": {
+			args: args{
+				mg: &v1alpha1.Bucket{
+					Spec: v1alpha1.BucketSpec{
+						ForProvider: v1alpha1.BucketParameters{
+							Description:    pointer.String("bucket"),
+							RetentionRules: []v1alpha1.RetentionRule{{Type: "expire", EverySeconds: 0}},
+						},
+					},
+				},
+				api: &clients.MockBucketsAPI{
+					FindBucketByNameFn: func(_ context.Context, _ string) (*domain.Bucket, error) {
+						return &domain.Bucket{
+							Description: pointer.String("bucket"),
+						}, nil
+					},
+				},
+			},
+			want: want{
+				obs: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"ExpireUpdateNeeded": {
+			args: args{
+				mg: &v1alpha1.Bucket{
+					Spec: v1alpha1.BucketSpec{
+						ForProvider: v1alpha1.BucketParameters{
+							Description:    pointer.String("bucket"),
+							RetentionRules: []v1alpha1.RetentionRule{{Type: "expire", EverySeconds: 3600}},
+						},
+					},
+				},
+				api: &clients.MockBucketsAPI{
+					FindBucketByNameFn: func(_ context.Context, _ string) (*domain.Bucket, error) {
+						return &domain.Bucket{
+							Description: pointer.String("bucket"),
+						}, nil
+					},
+				},
+			},
+			want: want{
+				obs: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
